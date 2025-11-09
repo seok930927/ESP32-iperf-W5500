@@ -1,0 +1,2 @@
+source C:/projects/ESP/W5500-iperf/iperf/build/gdbinit/symbols
+source C:/projects/ESP/W5500-iperf/iperf/build/gdbinit/connect
