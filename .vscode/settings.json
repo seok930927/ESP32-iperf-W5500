@@ -14,5 +14,26 @@
     "--compile-commands-dir=c:\\projects\\ESP\\W5500-iperf\\iperf\\build"
   ],
   "idf.portWin": "COM50",
-  "idf.monitorPort": "COM50"
+  "idf.monitorPort": "COM50",
+  "files.associations": {
+    "esp_heap_caps.h": "c",
+    "spi_master.h": "c",
+    "ethernet_init.h": "c",
+    "esp_log.h": "c",
+    "esp_eth_driver.h": "c",
+    "esp_netif.h": "c",
+    "esp_eth.h": "c",
+    "esp_eth_phy.h": "c",
+    "esp_eth_mac_spi.h": "c",
+    "soc_caps.h": "c",
+    "esp_eth_com.h": "c",
+    "sdkconfig.h": "c",
+    "esp_vfs_fat.h": "c",
+    "cmd_system.h": "c",
+    "cmd_ethernet.h": "c",
+    "esp_eth_mac.h": "c",
+    "esp_eth_mac_openeth.h": "c",
+    "esp_eth_netif_glue.h": "c",
+    "iperf_cmd.h": "c"
+  }
 }

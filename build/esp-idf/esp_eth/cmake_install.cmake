@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/lihan/esp/v5.5.1/esp-idf/components/esp_eth
+# Install script for directory: C:/projects/ESP/W5500-iperf/iperf/components/esp_eth
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

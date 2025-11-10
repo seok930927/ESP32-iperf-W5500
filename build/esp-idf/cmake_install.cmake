@@ -259,11 +259,6 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/projects/ESP/W5500-iperf/iperf/build/esp-idf/esp_eth/cmake_install.cmake")
-endif()
-
-if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  # Include the install script for the subdirectory.
   include("C:/projects/ESP/W5500-iperf/iperf/build/esp-idf/console/cmake_install.cmake")
 endif()
 
@@ -280,6 +275,11 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
   include("C:/projects/ESP/W5500-iperf/iperf/build/esp-idf/espressif__iperf-cmd/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("C:/projects/ESP/W5500-iperf/iperf/build/esp-idf/esp_eth/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
