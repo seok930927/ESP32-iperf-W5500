@@ -34,6 +34,16 @@
     "esp_eth_mac.h": "c",
     "esp_eth_mac_openeth.h": "c",
     "esp_eth_netif_glue.h": "c",
-    "iperf_cmd.h": "c"
+    "iperf_cmd.h": "c",
+    "socket.h": "c",
+    "esp_event.h": "c",
+    "w5500.h": "c",
+    "regex": "c",
+    "esp_attr.h": "c",
+    "iperf.h": "c",
+    "wizchip_spi.h": "c",
+    "ip6_addr.h": "c",
+    "cerrno": "c",
+    "complex": "c"
   }
 }
