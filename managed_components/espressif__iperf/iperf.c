@@ -215,6 +215,7 @@ IRAM_ATTR static void socket_recv(int recv_socket, struct sockaddr_storage liste
 
     buffer = s_iperf_ctrl.buffer;
     want_recv = s_iperf_ctrl.buffer_len;
+    int pack_len = 0;
     while (!s_iperf_ctrl.finish) {
     
         getsockopt(recv_socket, SO_RECVBUF, &pack_len);
