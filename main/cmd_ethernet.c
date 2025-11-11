@@ -13,38 +13,35 @@
 #include "esp_mac.h"
 #include "argtable3/argtable3.h"
 
+#include "W5500/w5500.h"
+#include "wizchip_conf.h"
+#include "socket.h"
+
+#include "wizchip_spi.h"
+
+
 /* "ethernet" command */
 static struct {
     struct arg_str *control;
     struct arg_end *end;
 } eth_control_args;
 
+
+static wiz_NetInfo g_net_info = {
+    .mac = {0x00, 0x08, 0xDC, 0x12, 0x34, 0x56}, // MAC address
+    .ip = {192, 168, 11, 2},                     // IP address
+    .sn = {255, 255, 255, 0},                    // Subnet Mask
+    .gw = {192, 168, 11, 1},                     // Gateway
+    .dns = {8, 8, 8, 8},                         // DNS server
+    .dhcp = NETINFO_STATIC
+};
+
+
 static int eth_cmd_control(int argc, char **argv)
 {
-    int nerrors = arg_parse(argc, argv, (void **)&eth_control_args);
-    if (nerrors != 0) {
-        arg_print_errors(stderr, eth_control_args.end, argv[0]);
-        return 1;
-    }
-
-    if (!strncmp(eth_control_args.control->sval[0], "info", 4)) {
-        uint8_t mac_addr[6];
-        esp_netif_ip_info_t ip;
-        esp_netif_t *esp_netif;
-        // we can use esp_netif_next_unsafe since we one time initialize the network and we don't de-init
-        esp_netif = esp_netif_next_unsafe(NULL);
-        while(esp_netif != NULL) {
-            printf("%s:\r\n", esp_netif_get_desc(esp_netif));
-            esp_eth_handle_t eth_hndl = esp_netif_get_io_driver(esp_netif);
-            esp_eth_ioctl(eth_hndl, ETH_CMD_G_MAC_ADDR, mac_addr);
-            printf("  HW ADDR: " MACSTR "\r\n", MAC2STR(mac_addr));
-            esp_netif_get_ip_info(esp_netif, &ip);
-            printf("  ETHIP: " IPSTR "\r\n", IP2STR(&ip.ip));
-            printf("  ETHMASK: " IPSTR "\r\n", IP2STR(&ip.netmask));
-            printf("  ETHGW: " IPSTR "\r\n", IP2STR(&ip.gw));
-            esp_netif = esp_netif_next_unsafe(esp_netif);
-        }
-    }
+    print_network_information(g_net_info);
+  
+    printf("will be Define \r\n") ; 
     return 0;
 }
 
