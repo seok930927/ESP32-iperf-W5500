@@ -18,6 +18,8 @@
 #include "driver/spi_master.h"
 #include "esp_log.h"      // ESP_LOGI, ESP_LOGE를 위해 추가
 #include "esp_err.h"      // ESP_ERROR_CHECK를 위해 추가
+#include "sdkconfig.h"
+
 /**
     ----------------------------------------------------------------------------------------------------
     Macros
@@ -54,6 +56,7 @@ static inline void wizchip_deselect(void) {
 spi_device_handle_t spi_dev;
 
 
+SemaphoreHandle_t spi_mutex;
 
 // SPI 초기화 함수
 void spi_init(void)
@@ -62,9 +65,9 @@ void spi_init(void)
     
     // SPI 버스 설정
     spi_bus_config_t buscfg = {
-        .miso_io_num = SPI_MISO_PIN,
-        .mosi_io_num = SPI_MOSI_PIN,
-        .sclk_io_num = SPI_CLK_PIN,
+        .miso_io_num = CONFIG_EXAMPLE_ETH_SPI_MISO_GPIO,
+        .mosi_io_num = CONFIG_EXAMPLE_ETH_SPI_MOSI_GPIO,
+        .sclk_io_num = CONFIG_EXAMPLE_ETH_SPI_SCLK_GPIO,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
         .max_transfer_sz = 16* 1024,
@@ -72,14 +75,18 @@ void spi_init(void)
     
     // SPI 디바이스 설정
     spi_device_interface_config_t devcfg = {
-        .clock_speed_hz =  50000000,  // 4MHz
+        .clock_speed_hz =  CONFIG_EXAMPLE_ETH_SPI_CLOCK_MHZ * 1000 * 1000,  // 4MHz
         .mode = 0,                  // SPI mode 0
-        .spics_io_num = SPI_CS_PIN,
+        .spics_io_num = CONFIG_EXAMPLE_ETH_SPI_CS0_GPIO,
         .queue_size = 7,
     };
     
     // SPI 버스 초기화
     ret = spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO);
+
+    spi_mutex = xSemaphoreCreateMutex();
+
+
     ESP_ERROR_CHECK(ret);
     
     ESP_LOGI(TAG_W5500_SPI, "SPI bus initialized successfully");
@@ -259,9 +266,15 @@ void qspi_read_data(uint8_t cmd , uint16_t addr, uint8_t *data, size_t len){
     
 
 }
+
+
+
+
 // SPI 데이터 전송 함수
 void spi_send_data( uint8_t *data, size_t len)
 {
+    xSemaphoreTake(spi_mutex, portMAX_DELAY);
+
     esp_err_t ret;
     spi_transaction_t t;
     
@@ -273,11 +286,15 @@ void spi_send_data( uint8_t *data, size_t len)
     ret = spi_device_transmit(spi_dev, &t);
     ESP_ERROR_CHECK(ret);
     
+    xSemaphoreGive(spi_mutex);  
+    
 }
 
 // SPI 명령어/주소 전송 후 데이터 수신 함수 (정적 버퍼 버전)
 void spi_receive_data( uint8_t *data,uint8_t *recv_data , size_t cmd_size , size_t len)
 {
+    xSemaphoreTake(spi_mutex, portMAX_DELAY);
+
     esp_err_t ret;
     spi_transaction_t t;
     
@@ -295,13 +312,17 @@ void spi_receive_data( uint8_t *data,uint8_t *recv_data , size_t cmd_size , size
     t.rx_buffer = tx_rx_buffer;  // 같은 버퍼 사용
 
     ret = spi_device_transmit(spi_dev, &t);
-    ESP_ERROR_CHECK(ret);
-    
+    if (ret != ESP_OK) {
+        ESP_LOGE("SPI", "Transmit failed: %s", esp_err_to_name(ret));
+        return;
+    }
 
     // 수신된 데이터만 복사 (명령어/주소 부분 제외)
     memcpy(recv_data, tx_rx_buffer + cmd_size , len);
 
     free(tx_rx_buffer);  // 메모리 해제
+
+    xSemaphoreGive(spi_mutex);
 }
 
 
@@ -312,16 +333,16 @@ void wizchip_gpio_init(void)
     gpio_config_t io_conf = {0};
     io_conf.intr_type = GPIO_INTR_DISABLE;     // 인터럽트 비활성화
     io_conf.mode = GPIO_MODE_OUTPUT;           // 출력 모드
-    io_conf.pin_bit_mask = (1ULL << SPI_RST_PIN); // 리셋 핀 설정
+    io_conf.pin_bit_mask = (1ULL << CONFIG_EXAMPLE_ETH_SPI_PHY_RST0_GPIO); // 리셋 핀 설정
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
     io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
     
     ESP_ERROR_CHECK(gpio_config(&io_conf));
     
     // 초기 상태를 HIGH로 설정 (리셋 비활성화)
-    gpio_set_level(SPI_RST_PIN, 1);
+    gpio_set_level(CONFIG_EXAMPLE_ETH_SPI_PHY_RST0_GPIO, 1);
     
-    ESP_LOGI(TAG_W5500_SPI, "GPIO initialized - RST pin: %d", SPI_RST_PIN);
+    ESP_LOGI(TAG_W5500_SPI, "GPIO initialized - RST pin: %d", CONFIG_EXAMPLE_ETH_SPI_PHY_RST0_GPIO);
 }
 
 // 하드웨어 리셋 함수
@@ -332,19 +353,22 @@ void wizchip_hw_reset(void)
 
 
     // RST 핀을 LOW로 설정 (리셋 활성화)
-    gpio_set_level(SPI_RST_PIN, 1);
-    ESP_LOGI(TAG_W5500_SPI, "RST pin set to LOW");
+    gpio_set_level(CONFIG_EXAMPLE_ETH_SPI_PHY_RST0_GPIO, 1);
+    ESP_LOGI(TAG_W5500_SPI, "RST pin set to HIGH");
     
     // 1ms 대기 (리셋 신호 유지)
     vTaskDelay(pdMS_TO_TICKS(1000));
     
-    // RST 핀을 HIGH로 설정 (리셋 해제)
-    gpio_set_level(SPI_RST_PIN, 0);
+    // RST 핀을 LOW 로 설정 (리셋 해제)
+    gpio_set_level(CONFIG_EXAMPLE_ETH_SPI_PHY_RST0_GPIO, 0);
+    ESP_LOGI(TAG_W5500_SPI, "RST pin set to LOW");
+
+    // 1ms 대기 (리셋 신호 유지)
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    gpio_set_level(SPI_RST_PIN, 1);
-
+    gpio_set_level(CONFIG_EXAMPLE_ETH_SPI_PHY_RST0_GPIO, 1);
     ESP_LOGI(TAG_W5500_SPI, "RST pin set to HIGH");
+
     // 10ms 대기 (W5500 부팅 완료 대기)
     vTaskDelay(pdMS_TO_TICKS(10));
     

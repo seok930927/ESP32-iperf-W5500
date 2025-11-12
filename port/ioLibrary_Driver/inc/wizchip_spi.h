@@ -43,9 +43,7 @@
 
 
 
-// SPI 핀 설정
-#define SPI_MOSI_PIN    47
-#define SPI_MISO_PIN    38
+
 
 #define SPI_RST_PIN     17
 #define SPI_PIN_INT     10

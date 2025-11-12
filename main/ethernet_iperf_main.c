@@ -77,6 +77,7 @@ void init_ethernet_and_netif(void)
 
     wizchip_reset();
     spi_init(); 
+    vTaskDelay(pdMS_TO_TICKS(1000));
     wizchip_initialize();
     network_initialize(g_net_info);
     print_network_information(g_net_info);
