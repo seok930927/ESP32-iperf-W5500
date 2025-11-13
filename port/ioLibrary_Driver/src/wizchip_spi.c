@@ -283,9 +283,12 @@ void spi_send_data( uint8_t *data, size_t len)
     t.tx_buffer = data;
 
 
-    ret = spi_device_transmit(spi_dev, &t);
-    ESP_ERROR_CHECK(ret);
-    
+    ret = spi_device_polling_transmit(spi_dev, &t);
+    if (ret != ESP_OK) {
+        ESP_LOGE("SPI", "Transmit failed: %s", esp_err_to_name(ret));
+        xSemaphoreGive(spi_mutex);
+        return;
+    }
     xSemaphoreGive(spi_mutex);  
     
 }
@@ -311,7 +314,7 @@ void spi_receive_data( uint8_t *data,uint8_t *recv_data , size_t cmd_size , size
     t.tx_buffer = tx_rx_buffer;  // 같은 버퍼 사용
     t.rx_buffer = tx_rx_buffer;  // 같은 버퍼 사용
 
-    ret = spi_device_transmit(spi_dev, &t);
+    ret = spi_device_polling_transmit(spi_dev, &t);
     if (ret != ESP_OK) {
         ESP_LOGE("SPI", "Transmit failed: %s", esp_err_to_name(ret));
         return;

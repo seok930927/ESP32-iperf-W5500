@@ -197,6 +197,14 @@ static esp_err_t iperf_start_report(void)
     return ESP_OK;
 }
 
+
+int32_t recv_iperf(uint8_t sn, uint8_t * buf, uint16_t len) {
+    wiz_recv_data(sn, buf, len);
+    setSn_CR(sn, Sn_CR_RECV);
+    while (getSn_CR(sn));
+
+    return (int32_t)len;
+}
 IRAM_ATTR static void socket_recv(int recv_socket, struct sockaddr_storage listen_addr, uint8_t type)
 {
     bool iperf_recv_start = true;
@@ -218,10 +226,10 @@ IRAM_ATTR static void socket_recv(int recv_socket, struct sockaddr_storage liste
     int pack_len = 0;
     /* busy loop*/
     while (!s_iperf_ctrl.finish) {
-    
+    spi_device_acquire_bus(spi_dev,portMAX_DELAY);
         getsockopt(recv_socket, SO_RECVBUF, &pack_len);
         if (pack_len > 0) {
-            actual_recv = recv(recv_socket, buffer, want_recv);
+            actual_recv = recv_iperf(recv_socket, buffer, want_recv);
             
             if (actual_recv < 0) {
                 iperf_show_socket_error_reason(error_log, recv_socket);
@@ -235,6 +243,7 @@ IRAM_ATTR static void socket_recv(int recv_socket, struct sockaddr_storage liste
                 s_iperf_ctrl.actual_len += actual_recv;
             }
         }
+        spi_device_release_bus(spi_dev); // 버스 해제
     }
 }
 
