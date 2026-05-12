@@ -76,6 +76,20 @@ void init_ethernet_and_netif(void)
     }
 }
 
+void cpu_load_task(void *arg)
+{
+    int core = xPortGetCoreID();
+   volatile static uint8_t  cnt = 0;
+   while(1){
+    for (int i = 0; i < 10000; i++) {
+        volatile float x = 1.2345f, y = 1.0001f;
+        x = (x * y) / (y + 0.00001f);
+    }
+    vTaskDelay(pdMS_TO_TICKS(10));
+}
+}
+
+
 void app_main(void)
 {
     esp_console_repl_t *repl = NULL;
@@ -108,6 +122,8 @@ void app_main(void)
     printf(" |                                                     |\n");
     printf(" =======================================================\n\n");
 
+
+    // xTaskCreatePinnedToCore(cpu_load_task, "load0", 8192, NULL, 21, NULL, 0);
     // start console REPL
     ESP_ERROR_CHECK(esp_console_start_repl(repl));
 }

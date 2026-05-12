@@ -14,5 +14,16 @@
     "--compile-commands-dir=c:\\projects\\ESP\\W5500-iperf\\iperf\\build"
   ],
   "idf.portWin": "COM50",
-  "idf.monitorPort": "COM50"
+  "idf.monitorPort": "COM50",
+  "files.associations": {
+    "freertos.h": "c",
+    "esp_attr.h": "c",
+    "sdkconfig.h": "c",
+    "task.h": "c",
+    "iperf_esp_check.h": "c",
+    "esp_rom_sys.h": "c",
+    "socket.h": "c",
+    "sockets.h": "c"
+  },
+  "idf.currentSetup": "C:\\Users\\lihan\\esp\\v5.5.1\\esp-idf"
 }

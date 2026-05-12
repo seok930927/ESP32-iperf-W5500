@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "ethernet_iperf",
-    "project_version":    "1",
+    "project_version":    "Iperf_LWIP_V1.0-dirty",
     "project_path":       "C:/projects/ESP/W5500-iperf/iperf",
     "idf_path":           "C:/Users/lihan/esp/v5.5.1/esp-idf",
     "build_dir":          "C:/projects/ESP/W5500-iperf/iperf/build",
